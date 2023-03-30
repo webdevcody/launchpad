@@ -1,4 +1,4 @@
-import shuttle, { InjectionKey } from "shuttle";
+import shuttle, { InjectionKey } from "@webdevcody/shuttle";
 
 export const ExampleKey = Symbol() as InjectionKey<string>;
 

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { type ShuttleHandler } from "shuttle";
+import { type ShuttleHandler } from "@webdevcody/shuttle";
 import { Env, ExampleKey } from "../..";
 
 export const handler: ShuttleHandler<Env> = async (

@@ -72,9 +72,6 @@ export async function setupRoutes<E>(
           route,
           filePath,
         };
-        logger.info(`request initiated`, {
-          ...logContext,
-        });
         handler
           .default({ inject, logger, env }, req, res)
           .catch((error: Error) => {

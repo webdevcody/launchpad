@@ -1,6 +1,9 @@
 {
-  "name": "shuttle",
-  "version": "1.0.0",
+  "name": "@webdevcody/launchpad",
+  "version": "0.0.6",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "",
   "scripts": {},
   "keywords": [],
