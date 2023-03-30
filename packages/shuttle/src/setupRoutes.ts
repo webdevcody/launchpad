@@ -1,7 +1,9 @@
 import fs from "fs";
 import path from "path";
 import { Request, Response, type Express } from "express";
-import { Inject, InjectionKey } from ".";
+import { Inject, InjectionKey, ShuttleContext, ShuttleHandler } from ".";
+import { Logger } from "winston";
+import { v4 as uuid } from "uuid";
 
 const methods = ["get", "post", "patch", "delete", "put", "options", "head"];
 
@@ -30,7 +32,12 @@ function traverseDirectory(dir: string, onFile: (filePath: string) => void) {
   });
 }
 
-export async function setupRoutes(app: Express, inject: Inject) {
+export async function setupRoutes<E>(
+  app: Express,
+  inject: Inject,
+  logger: Logger,
+  env: E
+) {
   console.log(`Registering Routes:`);
 
   traverseDirectory("src/routes", async (filePath) => {
@@ -48,11 +55,43 @@ export async function setupRoutes(app: Express, inject: Inject) {
     }
 
     try {
-      const handler = await import(path.join(process.cwd(), filePath));
-      (app as any)[name](
-        route.replace(/\[/g, ":").replace(/\]/g, ""),
-        (req: Request, res: Response) => handler.default(inject, req, res)
+      const handler: { default: ShuttleHandler<E> } = await import(
+        path.join(process.cwd(), filePath)
       );
+      const expressRoute: string = route.replace(/\[/g, ":").replace(/\]/g, "");
+      (app as any)[name](expressRoute, (req: Request, res: Response) => {
+        const requestId = uuid();
+        const start = new Date();
+        const startMs = Date.now();
+        const timeInvoked = start.toISOString();
+        const method = name.toUpperCase();
+        const logContext = {
+          timeInvoked,
+          requestId,
+          method,
+          route,
+          filePath,
+        };
+        logger.info(`request initiated`, {
+          ...logContext,
+        });
+        handler
+          .default({ inject, logger, env }, req, res)
+          .catch((error: Error) => {
+            logger.error(`request errored with ${error.message}`, {
+              ...logContext,
+              error: error.message,
+              errorTrace: error.stack,
+            });
+          })
+          .finally(() => {
+            const elaspedTime = Date.now() - startMs;
+            logger.info(`request completed`, {
+              ...logContext,
+              elaspedTime,
+            });
+          });
+      });
       console.log(` ✅ ${name.toUpperCase()}@${route} => ${filePath}`);
     } catch (err) {
       console.error(` ❌ ${name.toUpperCase()}@${route} => ${filePath}`);

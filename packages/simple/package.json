@@ -19,6 +19,6 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "shuttle": "file:../shuttle"
+    "shuttle": "launchpad"
   }
 }

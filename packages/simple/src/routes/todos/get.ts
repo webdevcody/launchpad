@@ -1,20 +1,19 @@
 import { Request, Response } from "express";
 import { type ShuttleHandler } from "shuttle";
-import { AddTodosKey, Env } from "../..";
+import { Env, ExampleKey } from "../..";
 
 export const handler: ShuttleHandler<Env> = async (
-  { inject },
+  { inject, logger },
   req: Request,
   res: Response
 ) => {
-  const addTodo = inject(AddTodosKey);
-
-  const todos = await addTodo({
-    id: Math.random() + "",
-    text: req.body.text,
-  });
-
-  res.json(todos);
+  logger.info("getting todos");
+  const message = inject(ExampleKey);
+  res.json([
+    {
+      message,
+    },
+  ]);
 };
 
 export default handler;

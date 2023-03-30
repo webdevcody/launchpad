@@ -1,17 +1,19 @@
 import { Request, Response } from "express";
 import { ShuttleHandler } from "shuttle";
-import { Env, GetTodoKey } from "../../..";
+import { Env } from "../../..";
 
 export const handler: ShuttleHandler<Env> = async (
-  { logger, inject, env },
+  { env },
   req: Request,
   res: Response
 ) => {
   const todoId = req.params.id;
-  const getTodo = inject(GetTodoKey);
-  logger.info("info not implmemented yet", env.NODE_ENV);
-  const todo = await getTodo(todoId);
-  res.json(todo);
+  res.json([
+    {
+      todoId,
+      message: env.MY_ENV,
+    },
+  ]);
 };
 
 export default handler;

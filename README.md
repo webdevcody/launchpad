@@ -10,10 +10,11 @@ This is a prototype of a file based routing REST framework that uses express.js 
 
 # Setup
 
-1. `npm i`
-2. `npm run -w example dev`
+1. `npm i --save launchpad/shuttle`
+2. `copy ./node_modules/launchpad/simple/* .`
+3. `npm run -w example dev`
 
-This will run an example API using the launchpad library.
+This will setup a simple an example API using the launchpad library.
 
 ## Todo
 
