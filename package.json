@@ -1,0 +1,15 @@
+{
+  "name": "shuttle",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {},
+  "workspaces": [
+    "packages/example",
+    "packages/shuttle"
+  ]
+}
