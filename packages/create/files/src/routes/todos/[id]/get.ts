@@ -1,11 +1,6 @@
-import { Request, Response } from "express";
 import { ShuttleHandler } from "../../..";
 
-export const handler: ShuttleHandler = async (
-  { env },
-  req: Request,
-  res: Response
-) => {
+const handler: ShuttleHandler = async ({ env }, req, res) => {
   const todoId = req.params.id;
   res.json([
     {

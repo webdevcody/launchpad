@@ -2,13 +2,31 @@ import express, { Request, Response } from "express";
 import { setupRoutes } from "./setupRoutes";
 import winston, { Logger } from "winston";
 const { format } = winston;
-import { cleanEnv, ValidatorSpec, str, port } from "envalid";
+import {
+  cleanEnv,
+  ValidatorSpec,
+  str,
+  port,
+  bool,
+  url,
+  host,
+  email,
+  json,
+  num,
+} from "envalid";
 import dotenv from "dotenv";
 dotenv.config();
+import z from "zod";
 
 type EnvValidators = {
   str: typeof str;
   port: typeof port;
+  bool: typeof bool;
+  url: typeof url;
+  host: typeof host;
+  email: typeof email;
+  json: typeof json;
+  num: typeof num;
 };
 
 const LOG_LEVELS = [
@@ -34,7 +52,16 @@ const providers = new Map<Symbol, any>();
 
 export default function app<T>(options: Options<T> = {}) {
   const env = cleanEnv(process.env, {
-    ...(options.env?.({ str, port }) ?? {}),
+    ...(options.env?.({
+      str,
+      port,
+      bool,
+      url,
+      host,
+      email,
+      json,
+      num,
+    }) ?? {}),
     LOG_LEVEL: str({
       choices: LOG_LEVELS,
     }),
@@ -83,6 +110,7 @@ export type ShuttleContext<E> = {
   inject: Inject;
   logger: Logger;
   env: E;
+  z: typeof z;
 };
 
 // type PropType<T, K extends "env"> = K extends keyof T ? T[K] : never;

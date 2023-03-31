@@ -1,6 +1,6 @@
 {
   "name": "@webdevcody/shuttle",
-  "version": "0.0.6",
+  "version": "0.0.9",
   "description": "",
   "main": "src/index.ts",
   "scripts": {},
@@ -23,6 +23,7 @@
     "envalid": "^7.3.1",
     "express": "^4.18.2",
     "uuid": "^9.0.0",
-    "winston": "^3.8.2"
+    "winston": "^3.8.2",
+    "zod": "^3.21.4"
   }
 }

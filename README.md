@@ -24,6 +24,19 @@ And here is an example of setting up your shuttle server:
 
 Running your server using a `npm run dev` should host your server on http://localhost:8080
 
+## Entry Point
+
+After setting up the project using the `npm create` script, the `src/index.ts` file will call the `shuttle` to setup the api server.
+
+```ts
+// src/index.ts
+import shuttle, { InjectionKey } from "@webdevcody/shuttle";
+const server = shuttle();
+export type ShuttleHandler = typeof server["handler"];
+```
+
+Take note of the exported `ShuttleHandler` type, you'll want to use this when you define your handler functions if you want type safety.
+
 ## File Based Routing
 
 Shuttle uses file based routing for defining api endpoints, and it'll search your project for a `src/routes` directory and dynamically register endpoints via files it finds. The supported file names are:
@@ -41,8 +54,9 @@ The location of the the endpoint file will determine the rest API endpont. For e
 To start processing the request, your file must export a default handler which looks like this:
 
 ```ts
+// src/routes/get.ts
 import { Request, Response } from "express";
-import { type ShuttleHandler } from "@webdevcody/shuttle";
+import { ShuttleHandler } from "../";
 
 export const handler: ShuttleHandler = async (
   { logger },
@@ -60,7 +74,7 @@ export const handler: ShuttleHandler = async (
 export default handler;
 ```
 
-Like mentioned, the handler is a normal express handler with additional context parameters passed into the first parameter.
+Like mentioned, the handler is a normal express handler with additional context parameters passed into the first parameter. The context parameter will contain various helper functions provided by the shuttle library.
 
 ## Logger
 
@@ -119,14 +133,7 @@ export const handler: ShuttleHandler = async (
 export default handler;
 ```
 
-## Project Generator
-
-We provide a [sample project](./packages/simple/) you're welcome to look through to see how an initial project is created. You can also run the following commands inside an empty directory to setup the latest scaffold for the api:
-
-1. `npm init -f && npm i --save @webdevcody/launchpad && cp -R ./node_modules/@webdevcody/launchpad/packages/simple/* . && cp -R ./node_modules/@webdevcody/launchpad/packages/simple/. . && npm i`
-2. `npm run dev`
-
-This will spin up a server on port 8080 with three example endpoints.
+By using your InjectionKey, the value returned will be typed correctly for you to use.
 
 ## Environment Variables
 

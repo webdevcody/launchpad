@@ -5,7 +5,11 @@
     "access": "public"
   },
   "description": "",
-  "scripts": {},
+  "scripts": {
+    "publish:all": "npm run publish:create && npm run publish:shuttle",
+    "publish:create": "npm -w @webdevcody/create-launchpad version patch && npm -w @webdevcody/create-launchpad publish",
+    "publish:shuttle": "npm -w @webdevcody/shuttle version patch && npm -w @webdevcody/shuttle publish"
+  },
   "keywords": [],
   "author": "",
   "license": "MIT",

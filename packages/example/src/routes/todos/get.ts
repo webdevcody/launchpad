@@ -1,11 +1,6 @@
-import { Request, Response } from "express";
 import { GetTodosKey, ShuttleHandler } from "../..";
 
-export const handler: ShuttleHandler = async (
-  { inject, logger },
-  req: Request,
-  res: Response
-) => {
+const handler: ShuttleHandler = async ({ inject, logger }, req, res) => {
   const getTodos = inject(GetTodosKey);
   const todos = await getTodos();
   logger.warn("got some todos");

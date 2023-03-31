@@ -1,14 +1,13 @@
-import { Request, Response } from "express";
-import { ExampleKey, ShuttleHandler } from "../..";
+import { ShuttleHandler } from "../..";
 
-export const handler: ShuttleHandler = async (
-  { inject },
-  req: Request,
-  res: Response
-) => {
-  const message = inject(ExampleKey);
+const handler: ShuttleHandler = async ({ z }, req, res) => {
+  const inputValidation = z.object({
+    message: z.string(),
+  });
+  const input = inputValidation.parse(req.body);
+
   res.json({
-    message,
+    message: input.message,
   });
 };
 

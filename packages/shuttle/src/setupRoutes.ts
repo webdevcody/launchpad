@@ -4,6 +4,7 @@ import { Request, Response, type Express } from "express";
 import { Inject, ShuttleHandler } from ".";
 import { Logger } from "winston";
 import { v4 as uuid } from "uuid";
+import z, { ZodError } from "zod";
 
 const methods = ["get", "post", "patch", "delete", "put", "options", "head"];
 
@@ -77,13 +78,18 @@ export async function setupRoutes<E>(
           filePath,
         };
         handler
-          .default({ inject, logger, env }, req, res)
+          .default({ inject, logger, env, z }, req, res)
           .catch((error: Error) => {
             logger.error(`request errored with ${error.message}`, {
               ...logContext,
               error: error.message,
               errorTrace: error.stack,
             });
+            if (error instanceof ZodError) {
+              res.status(400).send(error.message);
+            } else {
+              res.status(500).send(error.message);
+            }
           })
           .finally(() => {
             const elaspedTime = Date.now() - startMs;
