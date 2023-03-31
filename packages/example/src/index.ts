@@ -7,7 +7,6 @@ export const GetTodoKey = Symbol() as InjectionKey<typeof getTodo>;
 export const AddTodosKey = Symbol() as InjectionKey<typeof addTodo>;
 
 const { env } = shuttle({
-  port: 8080,
   providers(provide) {
     provide(GetTodosKey, getTodos);
     provide(AddTodosKey, addTodo);
