@@ -78,25 +78,27 @@ export async function setupRoutes<E>(
           filePath,
         };
         handler
-          .default({ inject, logger, env, z }, req, res)
+          .default({ inject, logger, env }, req, res)
+          .then(() => {
+            const elaspedTime = Date.now() - startMs;
+            logger.info(`request completed`, {
+              ...logContext,
+              elaspedTime,
+            });
+          })
           .catch((error: Error) => {
+            const elaspedTime = Date.now() - startMs;
             logger.error(`request errored with ${error.message}`, {
               ...logContext,
               error: error.message,
               errorTrace: error.stack,
+              elaspedTime,
             });
             if (error instanceof ZodError) {
               res.status(400).send(error.message);
             } else {
               res.status(500).send(error.message);
             }
-          })
-          .finally(() => {
-            const elaspedTime = Date.now() - startMs;
-            logger.info(`request completed`, {
-              ...logContext,
-              elaspedTime,
-            });
           });
       });
       console.log(` ✅ ${name.toUpperCase()}@${route} => ${filePath}`);

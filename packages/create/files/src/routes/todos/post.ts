@@ -1,14 +1,23 @@
-import { ShuttleHandler } from "../..";
+import { createHandler, CreateTodoKey } from "../..";
 
-const handler: ShuttleHandler = async ({ z }, req, res) => {
-  const inputValidation = z.object({
-    message: z.string(),
-  });
-  const input = inputValidation.parse(req.body);
-
-  res.json({
-    message: input.message,
-  });
-};
-
-export default handler;
+export default createHandler({
+  input(z) {
+    return z.object({
+      text: z.string(),
+    });
+  },
+  output(z) {
+    return z.object({
+      id: z.string(),
+      text: z.string(),
+    });
+  },
+  async handler({ input, inject, logger }) {
+    logger.info("getting todos");
+    const createTodo = inject(CreateTodoKey);
+    const todo = await createTodo({
+      text: input.text,
+    });
+    return todo;
+  },
+});

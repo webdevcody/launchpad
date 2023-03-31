@@ -1,13 +1,20 @@
-import { ExampleKey, ShuttleHandler } from "../..";
+import { createHandler, GetTodosKey } from "../..";
 
-const handler: ShuttleHandler = async ({ inject, logger }, req, res) => {
-  logger.info("getting todos");
-  const message = inject(ExampleKey);
-  res.json([
-    {
-      message,
-    },
-  ]);
-};
-
-export default handler;
+export default createHandler({
+  output(z) {
+    return z.array(
+      z
+        .object({
+          id: z.string(),
+          text: z.string(),
+        })
+        .strict()
+    );
+  },
+  async handler({ inject, logger }) {
+    logger.info("getting todos");
+    const getTodos = inject(GetTodosKey);
+    const todos = await getTodos();
+    return todos;
+  },
+});

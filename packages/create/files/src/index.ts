@@ -1,10 +1,13 @@
-import shuttle, { InjectionKey } from "@webdevcody/shuttle";
+import shuttle, { createInjectionKey } from "@webdevcody/shuttle";
+import { createTodo, getTodos } from "./persistence/todos";
 
-export const ExampleKey = Symbol() as InjectionKey<string>;
+export const CreateTodoKey = createInjectionKey(createTodo);
+export const GetTodosKey = createInjectionKey(getTodos);
 
-const server = shuttle({
+export const { createHandler } = shuttle({
   providers(provide) {
-    provide(ExampleKey, "welcome");
+    provide(CreateTodoKey, createTodo);
+    provide(GetTodosKey, getTodos);
   },
   env({ str }) {
     return {
@@ -14,5 +17,3 @@ const server = shuttle({
     };
   },
 });
-
-export type ShuttleHandler = typeof server["handler"];
