@@ -55,14 +55,9 @@ To start processing the request, your file must export a default handler which l
 
 ```ts
 // src/routes/get.ts
-import { Request, Response } from "express";
 import { ShuttleHandler } from "../";
 
-export const handler: ShuttleHandler = async (
-  { logger },
-  req: Request,
-  res: Response
-) => {
+export const handler: ShuttleHandler = async ({ logger }, req, res) => {
   logger.info("this is your todo endpoint");
   res.json([
     {
@@ -115,15 +110,10 @@ and you can easily retrieve your depenedencies inside your handlers like so:
 
 ```ts
 // src/routes/todos/get.ts
-import { Request, Response } from "express";
 import { type ShuttleHandler } from "shuttle";
 import { YourKey } from "../..";
 
-export const handler: ShuttleHandler = async (
-  { inject },
-  req: Request,
-  res: Response
-) => {
+export const handler: ShuttleHandler = async ({ inject }, req, res) => {
   const myFunction = inject(YourKey);
   res.json({
     message: myFunction(), // "hello"
@@ -160,14 +150,12 @@ and inside your handlers, you can make typesafe env objects like so:
 
 ```ts
 // src/routes/todos/get.ts
-import { Request, Response } from "express";
-import { type ShuttleHandler } from "@webdevcody/shuttle";
-import { Env } from "../..";
+import { type ShuttleHandler } from "../..";
 
-export const handler: ShuttleHandler<Env> = async (
+export const handler: ShuttleHandler = async (
   { env },
-  req: Request,
-  res: Response
+  req,
+  res
 ) => {
   res.json(env.MY_ENV),
 };
