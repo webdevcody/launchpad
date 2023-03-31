@@ -133,7 +133,7 @@ Shuttle uses `envalid` and `dotenv` to load in your `.env` and verify your envir
 // src/index.ts
 import shuttle from "@webdevcody/shuttle";
 
-const { env } = shuttle({
+const server = shuttle({
   env({ str }) {
     return {
       MY_ENV: str({
@@ -143,7 +143,7 @@ const { env } = shuttle({
   },
 });
 
-export type Env = typeof env;
+export type ShuttleHandler = typeof server["handler"];
 ```
 
 and inside your handlers, you can make typesafe env objects like so:
