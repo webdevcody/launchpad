@@ -2,7 +2,7 @@ import shuttle, { InjectionKey } from "@webdevcody/shuttle";
 
 export const ExampleKey = Symbol() as InjectionKey<string>;
 
-const { env } = shuttle({
+const server = shuttle({
   providers(provide) {
     provide(ExampleKey, "welcome");
   },
@@ -15,4 +15,4 @@ const { env } = shuttle({
   },
 });
 
-export type Env = typeof env;
+export type ShuttleHandler = typeof server["handler"];

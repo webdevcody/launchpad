@@ -1,0 +1,16 @@
+{
+  "name": "@webdevcody/create-launchpad",
+  "version": "0.0.5",
+  "description": "",
+  "main": "index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {},
+  "bin": {
+    "create-launchpad": "./setup.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

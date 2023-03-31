@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { Request, Response, type Express } from "express";
-import { Inject, InjectionKey, ShuttleContext, ShuttleHandler } from ".";
+import { Inject, ShuttleHandler } from ".";
 import { Logger } from "winston";
 import { v4 as uuid } from "uuid";
 
@@ -39,6 +39,10 @@ export async function setupRoutes<E>(
   env: E
 ) {
   console.log(`Registering Routes:`);
+
+  if (!fs.existsSync("src/routes")) {
+    fs.mkdirSync("src/routes");
+  }
 
   traverseDirectory("src/routes", async (filePath) => {
     const basename = path.basename(filePath);

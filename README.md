@@ -2,11 +2,12 @@
 
 This is a prototype of a file based routing REST framework that uses express.js under the hood. The goal of this framework is to provide a single CLI command to deploy the REST api to AWS serverless / api gateway. I want to provide built in mechanisms for dependecy injection and provide a standard structure one can follow to build a "production ready api". This includes
 
+- node 18 compatible
 - fully typesafe
 - file based routing
 - logger included
 - baked in dependency injection solution
-- a one command deployment into AWS serverless.
+- a one command deployment into an AWS mono lambda
 - ...more to come maybe
 
 ## Getting Started
@@ -15,27 +16,13 @@ Launchpad is a collection of libraries and tools to help you build and deploy a 
 
 The Launchpad package used for running this api is called [shuttle](./packages/shuttle/). You can build a simple API using shuttle by doing the following:
 
-To install shuttle:
+To setup a launchpad project, run the following in a blank directory:
 
-`npm i --save @webdevcody/shuttle`
+`npm create @webdevcody/launchpad@latest`
 
 And here is an example of setting up your shuttle server:
 
-```ts
-// src/index.ts
-import shuttle from "@webdevcody/shuttle";
-shuttle();
-```
-
-You'll need to setup a .env file with the following
-
-```sh
-LOG_LEVEL="info"
-NODE_ENV="development"
-PORT=8080
-```
-
-Running your server using a `npx tsx src/index.ts` should host your server on http://localhost:8080
+Running your server using a `npm run dev` should host your server on http://localhost:8080
 
 ## File Based Routing
 

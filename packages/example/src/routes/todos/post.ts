@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
-import { type ShuttleHandler } from "shuttle";
-import { AddTodosKey, Env } from "../..";
+import { AddTodosKey, ShuttleHandler } from "../..";
 
-export const handler: ShuttleHandler<Env> = async (
+export const handler: ShuttleHandler = async (
   { inject },
   req: Request,
   res: Response

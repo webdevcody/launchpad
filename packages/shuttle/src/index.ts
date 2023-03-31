@@ -22,8 +22,8 @@ const LOG_LEVELS = [
 ] as const;
 
 type Options<T> = {
-  providers: (provide: (key: Symbol, value: any) => void) => void;
-  env: (validators: EnvValidators) => {
+  providers?: (provide: (key: Symbol, value: any) => void) => void;
+  env?: (validators: EnvValidators) => {
     [K in keyof T]: ValidatorSpec<T[K]>;
   };
 };
@@ -32,9 +32,9 @@ export interface InjectionKey<T> extends Symbol {}
 
 const providers = new Map<Symbol, any>();
 
-export default function app<T>(options: Options<T>) {
+export default function app<T>(options: Options<T> = {}) {
   const env = cleanEnv(process.env, {
-    ...options.env({ str, port }),
+    ...(options.env?.({ str, port }) ?? {}),
     LOG_LEVEL: str({
       choices: LOG_LEVELS,
     }),
@@ -60,7 +60,7 @@ export default function app<T>(options: Options<T>) {
 
   app.use(express.json());
 
-  options.providers((key: Symbol, value: any) => {
+  options.providers?.((key: Symbol, value: any) => {
     providers.set(key, value);
   });
 
@@ -70,7 +70,11 @@ export default function app<T>(options: Options<T>) {
 
   app.listen(env.PORT);
 
-  return { env };
+  const handler: ShuttleHandler<T & typeof env> = async (context, req, res) => {
+    return;
+  };
+
+  return { env, handler };
 }
 
 export type Inject = <T>(key: InjectionKey<T>) => T;
@@ -81,9 +85,9 @@ export type ShuttleContext<E> = {
   env: E;
 };
 
-type PropType<T, K extends "env"> = K extends keyof T ? T[K] : never;
+// type PropType<T, K extends "env"> = K extends keyof T ? T[K] : never;
 
-export type Env = PropType<ReturnType<typeof app>, "env">;
+// type Env = PropType<ReturnType<typeof app>, "env">;
 
 export type ShuttleHandler<E> = (
   context: ShuttleContext<E>,

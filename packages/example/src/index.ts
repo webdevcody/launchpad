@@ -6,7 +6,7 @@ export const GetTodosKey = Symbol() as InjectionKey<typeof getTodos>;
 export const GetTodoKey = Symbol() as InjectionKey<typeof getTodo>;
 export const AddTodosKey = Symbol() as InjectionKey<typeof addTodo>;
 
-const { env } = shuttle({
+const server = shuttle({
   providers(provide) {
     provide(GetTodosKey, getTodos);
     provide(AddTodosKey, addTodo);
@@ -21,4 +21,4 @@ const { env } = shuttle({
   },
 });
 
-export type Env = typeof env;
+export type ShuttleHandler = typeof server["handler"];
