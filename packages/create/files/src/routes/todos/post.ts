@@ -12,7 +12,8 @@ export default createHandler({
       text: z.string(),
     });
   },
-  async handler({ input, inject, logger }) {
+  async handler({ input, inject, logger, env }) {
+    // TODO: make env fully typed
     logger.info("getting todos");
     const createTodo = inject(CreateTodoKey);
     const todo = await createTodo({
