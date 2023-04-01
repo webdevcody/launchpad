@@ -50,7 +50,7 @@ interface InjectionKey<T> extends Symbol {}
 
 const providers = new Map<Symbol, any>();
 
-export default function app<T>(options: Options<T> = {}) {
+export default function app<T>(options: Options<T>) {
   const env = cleanEnv(process.env, {
     ...(options.env?.({
       str,
@@ -61,7 +61,10 @@ export default function app<T>(options: Options<T> = {}) {
       email,
       json,
       num,
-    }) ?? {}),
+    }) ??
+      ({} as {
+        [K in keyof T]: ValidatorSpec<T[K]>;
+      })),
     LOG_LEVEL: str({
       choices: LOG_LEVELS,
     }),
@@ -97,9 +100,6 @@ export default function app<T>(options: Options<T> = {}) {
 
   app.listen(env.PORT);
 
-  // const handler: ShuttleHandler<T & typeof env> = async (context, req, res) => {
-  //   return;
-  // };
   function createHandler<I, O>(
     options: CreateHandlerOptions<I, O, typeof env>
   ) {
@@ -134,10 +134,6 @@ export type ShuttleContext<E> = {
   logger: Logger;
   env: E;
 };
-
-// type PropType<T, K extends "env"> = K extends keyof T ? T[K] : never;
-
-// type Env = PropType<ReturnType<typeof app>, "env">;
 
 export type ShuttleHandler<E> = (
   context: ShuttleContext<E>,
