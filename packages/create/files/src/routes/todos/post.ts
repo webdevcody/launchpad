@@ -13,7 +13,7 @@ export default createHandler({
     });
   },
   async handler({ input, inject, logger, env }) {
-    // TODO: make env fully typed
+    // TODO: env.MY_ENV should be showing up, but it's now
     logger.info("getting todos");
     const createTodo = inject(CreateTodoKey);
     const todo = await createTodo({

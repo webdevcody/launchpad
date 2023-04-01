@@ -100,6 +100,25 @@ export default function app<T>(options: Options<T> = {}) {
   // const handler: ShuttleHandler<T & typeof env> = async (context, req, res) => {
   //   return;
   // };
+  function createHandler<I, O>(
+    options: CreateHandlerOptions<I, O, typeof env>
+  ) {
+    return async (
+      { inject, logger, env }: ShuttleContext<typeof env>,
+      req: Request,
+      res: Response
+    ) => {
+      const input: z.infer<I> = (options.input?.(z) as AnyZodObject)?.parse(
+        req.body
+      ) as z.infer<I>;
+
+      const result = await options.handler({ input, inject, logger, env });
+
+      const output = (options.output?.(z) as AnyZodObject).parse(result);
+
+      res.json(output);
+    };
+  }
 
   return { env, createHandler };
 }
@@ -133,21 +152,3 @@ type CreateHandlerOptions<I, O, E> = {
     handlerOptions: { input: z.infer<I> } & ShuttleContext<E>
   ) => Promise<z.infer<O>>;
 };
-
-export function createHandler<I, O, E>(options: CreateHandlerOptions<I, O, E>) {
-  return async (
-    { inject, logger, env }: ShuttleContext<E>,
-    req: Request,
-    res: Response
-  ) => {
-    const input: z.infer<I> = (options.input?.(z) as AnyZodObject)?.parse(
-      req.body
-    ) as z.infer<I>;
-
-    const result = await options.handler({ input, inject, logger, env });
-
-    const output = (options.output?.(z) as AnyZodObject).parse(result);
-
-    res.json(output);
-  };
-}
