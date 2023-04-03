@@ -4,7 +4,10 @@ import { Request, Response, type Express } from "express";
 import { Inject, ShuttleHandler } from ".";
 import { Logger } from "winston";
 import { v4 as uuid } from "uuid";
-import z, { ZodError } from "zod";
+import { ZodError } from "zod";
+import { PrismaClient } from "@prisma/client";
+
+export const db = new PrismaClient();
 
 const methods = ["get", "post", "patch", "delete", "put", "options", "head"];
 
@@ -45,7 +48,9 @@ export async function setupRoutes<E>(
     fs.mkdirSync("src/routes");
   }
 
-  traverseDirectory("src/routes", async (filePath) => {
+  traverseDirectory("src/routes", async (filePath: string) => {
+    if (filePath.includes("test.ts")) return;
+
     const basename = path.basename(filePath);
     const name = path.parse(basename).name;
     const route = filePath
@@ -78,7 +83,7 @@ export async function setupRoutes<E>(
           filePath,
         };
         handler
-          .default({ inject, logger, env }, req, res)
+          .default({ inject, logger, env, db }, req, res)
           .then(() => {
             const elaspedTime = Date.now() - startMs;
             logger.info(`request completed`, {

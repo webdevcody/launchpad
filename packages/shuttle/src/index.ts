@@ -16,6 +16,7 @@ import {
 } from "envalid";
 import dotenv from "dotenv";
 import z, { AnyZodObject, ZodAny } from "zod";
+import { PrismaClient } from "@prisma/client";
 dotenv.config();
 
 type EnvValidators = {
