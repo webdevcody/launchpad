@@ -7,7 +7,7 @@
   "description": "",
   "scripts": {
     "publish:all": "npm run publish:create && npm run publish:shuttle",
-    "publish:create": "npm -w @webdevcody/create-launchpad version patch && npm -w @webdevcody/create-launchpad publish",
+    "publish:create": "./replace.sh ./packages/create/package.json && npm -w @webdevcody/create-launchpad version patch && npm -w @webdevcody/create-launchpad publish && ./revert.sh packages/create/package.json",
     "publish:shuttle": "npm -w @webdevcody/shuttle version patch && npm -w @webdevcody/shuttle publish"
   },
   "keywords": [],
