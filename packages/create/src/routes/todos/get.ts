@@ -4,7 +4,6 @@ export default createHandler({
   output(z) {
     return z.array(
       z.object({
-        id: z.string(),
         text: z.string(),
       })
     );

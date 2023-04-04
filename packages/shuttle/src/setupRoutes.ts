@@ -83,7 +83,7 @@ export async function setupRoutes<E>(
           filePath,
         };
         handler
-          .default({ inject, logger, env, db }, req, res)
+          .default({ inject, logger, env }, req, res)
           .then(() => {
             const elaspedTime = Date.now() - startMs;
             logger.info(`request completed`, {
@@ -106,7 +106,9 @@ export async function setupRoutes<E>(
             }
           });
       });
-      console.log(` ✅ ${name.toUpperCase()}@${route} => ${filePath}`);
+      console.log(` ✅ ${name.toUpperCase()}@${route}`);
+      console.log(`     - url:  http://localhost:8080${route}`);
+      console.log(`     - file: ${filePath}`);
     } catch (err) {
       console.error(` ❌ ${name.toUpperCase()}@${route} => ${filePath}`);
     }

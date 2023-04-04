@@ -15,8 +15,7 @@ import {
   num,
 } from "envalid";
 import dotenv from "dotenv";
-import z, { AnyZodObject, ZodAny } from "zod";
-import { PrismaClient } from "@prisma/client";
+import z, { ZodTypeAny } from "zod";
 dotenv.config();
 
 type EnvValidators = {
@@ -101,21 +100,26 @@ export default function app<T>(options: Options<T>) {
 
   app.listen(env.PORT);
 
-  function createHandler<I, O>(
-    options: CreateHandlerOptions<I, O, typeof env>
+  type CombinedEnv = typeof env;
+
+  function createHandler<I extends ZodTypeAny, O extends ZodTypeAny>(
+    options: CreateHandlerOptions<I, O, CombinedEnv>
   ) {
     return async (
-      { inject, logger, env }: ShuttleContext<typeof env>,
+      { inject, logger, env: CombinedEnv }: ShuttleContext<CombinedEnv>,
       req: Request,
       res: Response
     ) => {
-      const input: z.infer<I> = (options.input?.(z) as AnyZodObject)?.parse(
-        req.body
-      ) as z.infer<I>;
+      const requestPayload = {
+        ...req.body,
+        ...req.query,
+        ...req.params,
+      };
+      const input = options.input?.(z)?.parse(requestPayload) ?? requestPayload;
 
       const result = await options.handler({ input, inject, logger, env });
 
-      const output = (options.output?.(z) as AnyZodObject).parse(result);
+      const output = options.output?.(z).parse(result) ?? result;
 
       res.json(output);
     };
@@ -142,7 +146,7 @@ export type ShuttleHandler<E> = (
   res: Response
 ) => Promise<void>;
 
-type CreateHandlerOptions<I, O, E> = {
+type CreateHandlerOptions<I extends ZodTypeAny, O extends ZodTypeAny, E> = {
   input?: (validate: typeof z) => I;
   output?: (validate: typeof z) => O;
   handler: (
