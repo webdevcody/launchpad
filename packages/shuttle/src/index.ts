@@ -84,7 +84,7 @@ export default function app<T>(options: Options<T>) {
           format.prettyPrint(),
           format.colorize({ all: true })
         ),
-      }),
+      } as any) as any,
     ],
   });
 
@@ -125,7 +125,7 @@ export default function app<T>(options: Options<T>) {
     };
   }
 
-  return { env, createHandler };
+  return { env, createHandler, app };
 }
 
 export type Inject = <T>(key: InjectionKey<T>) => T;

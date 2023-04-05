@@ -1,3 +1,5 @@
+// @ts-ignore
+
 import fs from "fs";
 import path from "path";
 import { Request, Response, type Express } from "express";

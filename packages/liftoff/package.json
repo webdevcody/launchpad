@@ -1,0 +1,17 @@
+{
+  "name": "@webdevcody/liftoff",
+  "version": "0.0.3",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "bin": {
+    "liftoff": "./scripts/deploy.sh"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {}
+}

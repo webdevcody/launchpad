@@ -4,7 +4,7 @@ import { createTodo, getTodos } from "./persistence/todos";
 export const CreateTodoKey = createInjectionKey(createTodo);
 export const GetTodosKey = createInjectionKey(getTodos);
 
-export const { createHandler } = shuttle({
+export const { createHandler, app } = shuttle({
   providers(provide) {
     provide(CreateTodoKey, createTodo);
     provide(GetTodosKey, getTodos);

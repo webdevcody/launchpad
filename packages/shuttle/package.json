@@ -1,6 +1,6 @@
 {
   "name": "@webdevcody/shuttle",
-  "version": "0.0.13",
+  "version": "0.0.19",
   "description": "",
   "main": "src/index.ts",
   "scripts": {},
