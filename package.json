@@ -7,9 +7,11 @@
   "description": "",
   "scripts": {
     "publish:all": "npm run publish:create && npm run publish:shuttle && npm run publish:liftoff",
+    "publish:create:beta": "./replace.sh ./packages/create/package.json && npm -w @webdevcody/create-launchpad version patch && npm -w @webdevcody/create-launchpad publish --tag beta && ./revert.sh packages/create/package.json",
     "publish:create": "./replace.sh ./packages/create/package.json && npm -w @webdevcody/create-launchpad version patch && npm -w @webdevcody/create-launchpad publish && ./revert.sh packages/create/package.json",
     "publish:liftoff": "npm -w @webdevcody/liftoff version patch && npm -w @webdevcody/liftoff publish",
-    "publish:shuttle": "npm -w @webdevcody/shuttle version patch && npm -w @webdevcody/shuttle publish"
+    "publish:shuttle": "npm -w @webdevcody/shuttle version patch && npm -w @webdevcody/shuttle publish",
+    "publish:shuttle:beta": "npm -w @webdevcody/shuttle version patch && npm -w @webdevcody/shuttle publish --tag beta"
   },
   "keywords": [],
   "author": "",

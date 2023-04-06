@@ -13,5 +13,5 @@ fi
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 $SCRIPT_DIR/compile-project.sh
-$SCRIPT_DIR/setup-s3.sh
+# $SCRIPT_DIR/setup-s3.sh
 $SCRIPT_DIR/deploy-lambda.sh

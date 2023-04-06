@@ -1,4 +1,4 @@
-import { createHandler, CreateTodoKey } from "../..";
+import { createHandler } from "../..";
 
 export default createHandler({
   input(z) {
@@ -12,8 +12,8 @@ export default createHandler({
       text: z.string(),
     });
   },
-  async handler({ input, inject }) {
-    const createTodo = inject(CreateTodoKey);
+  async handler({ input, providers }) {
+    const { createTodo } = providers;
     const todo = await createTodo({
       text: input.text,
     });

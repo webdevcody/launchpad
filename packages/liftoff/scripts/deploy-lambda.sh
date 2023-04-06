@@ -41,7 +41,13 @@ if aws lambda get-function --function-name "$FUNCTION_NAME" &> /dev/null; then
     --function-name "$FUNCTION_NAME" \
     --zip-file "fileb://$ZIP_FILE_PATH" \
     --region "$AWS_REGION"
-  echo "Lambda function '$FUNCTION_NAME' updated successfully."
+
+  # Publish a new version of the function
+  while ! aws lambda publish-version --function-name "$FUNCTION_NAME" --region "$AWS_REGION" --output text --query 'Version'; do
+    echo "Retrying publish-version command in 5 seconds..."
+    sleep 5
+  done
+  echo "New version published successfully"
 else
   # Create the Lambda function
   aws lambda create-function \

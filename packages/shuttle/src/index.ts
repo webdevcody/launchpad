@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { setupRoutes } from "./setupRoutes";
+import { runRoute } from "./setupRoutes";
 import winston, { Logger } from "winston";
 const { format } = winston;
 import {
@@ -39,20 +39,16 @@ const LOG_LEVELS = [
   "silly",
 ] as const;
 
-type Options<T> = {
-  providers?: (provide: (key: Symbol, value: any) => void) => void;
+type Options<T, P> = {
+  providers: P;
   env?: (validators: EnvValidators) => {
     [K in keyof T]: ValidatorSpec<T[K]>;
   };
 };
 
-interface InjectionKey<T> extends Symbol {}
-
-const providers = new Map<Symbol, any>();
-
-export default function app<T>(options: Options<T>) {
+export default function app<T, P>(appOptions: Options<T, P>) {
   const env = cleanEnv(process.env, {
-    ...(options.env?.({
+    ...(appOptions.env?.({
       str,
       port,
       bool,
@@ -72,6 +68,7 @@ export default function app<T>(options: Options<T>) {
       choices: ["development", "test", "production", "staging"],
     }),
     PORT: port(),
+    IS_LAMBDA: bool(),
   });
   const app = express();
 
@@ -90,23 +87,22 @@ export default function app<T>(options: Options<T>) {
 
   app.use(express.json());
 
-  options.providers?.((key: Symbol, value: any) => {
-    providers.set(key, value);
+  app.use("*", (req, res) => {
+    runRoute(app, appOptions.providers, logger, env, req, res);
   });
 
-  console.log(`LaunchPad listening on port ${env.PORT}`);
-
-  setupRoutes(app, (key: InjectionKey<any>) => providers.get(key), logger, env);
-
-  app.listen(env.PORT);
+  if (!env.IS_LAMBDA) {
+    app.listen(env.PORT);
+    console.log(`LaunchPad listening on port ${env.PORT}`);
+  }
 
   type CombinedEnv = typeof env;
 
   function createHandler<I extends ZodTypeAny, O extends ZodTypeAny>(
-    options: CreateHandlerOptions<I, O, CombinedEnv>
+    options: CreateHandlerOptions<I, O, CombinedEnv, P>
   ) {
     return async (
-      { inject, logger, env: CombinedEnv }: ShuttleContext<CombinedEnv>,
+      { logger, env: CombinedEnv }: ShuttleContext<CombinedEnv>,
       req: Request,
       res: Response
     ) => {
@@ -117,7 +113,12 @@ export default function app<T>(options: Options<T>) {
       };
       const input = options.input?.(z)?.parse(requestPayload) ?? requestPayload;
 
-      const result = await options.handler({ input, inject, logger, env });
+      const result = await options.handler({
+        input,
+        providers: appOptions.providers,
+        logger,
+        env,
+      });
 
       const output = options.output?.(z).parse(result) ?? result;
 
@@ -128,14 +129,7 @@ export default function app<T>(options: Options<T>) {
   return { env, createHandler, app };
 }
 
-export type Inject = <T>(key: InjectionKey<T>) => T;
-
-export function createInjectionKey<T>(value: T) {
-  return Symbol() as InjectionKey<T>;
-}
-
 export type ShuttleContext<E> = {
-  inject: Inject;
   logger: Logger;
   env: E;
 };
@@ -146,10 +140,10 @@ export type ShuttleHandler<E> = (
   res: Response
 ) => Promise<void>;
 
-type CreateHandlerOptions<I extends ZodTypeAny, O extends ZodTypeAny, E> = {
+type CreateHandlerOptions<I extends ZodTypeAny, O extends ZodTypeAny, E, P> = {
   input?: (validate: typeof z) => I;
   output?: (validate: typeof z) => O;
   handler: (
-    handlerOptions: { input: z.infer<I> } & ShuttleContext<E>
+    handlerOptions: { input: z.infer<I>; providers: P } & ShuttleContext<E>
   ) => Promise<z.infer<O>>;
 };

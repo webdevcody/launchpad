@@ -1,4 +1,18 @@
-# Overview
+**This is a prototype, please don't use this in production.**
+
+# Todo
+
+- route params inside the file based routing approach
+- fix the janky prisma schema duplication I had to do to get this working on aws
+- fix the duplicate prisma binary I had to do to get this working on aws
+- maybe consider authentication / authorization
+- consider exposing middlewares so people can use existing express middlewares
+- host the lambda behind api gateway
+- ability to destroy all created resources
+- ability to easily scope resource by environment (dev, stg, prod)
+- remove color logs when deployed to production
+
+## Overview
 
 This is a prototype of a file based routing REST framework that uses express.js under the hood. The goal of this framework is to provide a single CLI command to deploy the REST api to AWS serverless / api gateway. I want to provide built in mechanisms for dependecy injection and provide a standard structure one can follow to build a "production ready api". This includes
 
@@ -24,18 +38,46 @@ And here is an example of setting up your shuttle server:
 
 Running your server using a `npm run dev` should host your server on http://localhost:8080
 
+## Deployment to AWS
+
+This project is setup to be easily deployed to an AWS Lambda and hosted behind api gateway. After setting up your launchpad project, you can deploy it to aws like so:
+
+1. you should update prisma/schema.prisma to use something other than sqlite - sqlite will not work on serverless
+2. `npx liftoff`
+3. login to aws and update your lambda's environment variables
+
+## Tetsing
+
+The create package comes with a couple of api tests written using jest. You can run this using:
+
+1. `npm test`
+
 ## Entry Point
 
 After setting up the project using the `npm create` script, the `src/index.ts` file will call the `shuttle` to setup the api server.
 
 ```ts
 // src/index.ts
-import shuttle, { InjectionKey } from "@webdevcody/shuttle";
-const server = shuttle();
-export type ShuttleHandler = typeof server["handler"];
+import shuttle from "@webdevcody/shuttle";
+
+export const { createHandler, app } = shuttle({
+  providers: {
+    // any providers you want to inject into your handlers go here
+  },
+  env({ str }) {
+    return {
+      // any custom env variables would go here
+      MY_ENV: str({
+        choices: ["have", "fun"],
+      }),
+    };
+  },
+});
 ```
 
-Take note of the exported `ShuttleHandler` type, you'll want to use this when you define your handler functions if you want type safety.
+**you must export app for this to work in a deploy aws environment.**
+
+You will use the `createHandler` function inside your api endpoints.
 
 ## File Based Routing
 
@@ -55,18 +97,35 @@ To start processing the request, your file must export a default handler which l
 
 ```ts
 // src/routes/get.ts
-import { ShuttleHandler } from "../";
+import { createHandler } from "../..";
 
-export const handler: ShuttleHandler = async ({ logger }, req, res) => {
-  logger.info("this is your todo endpoint");
-  res.json([
-    {
-      task: "hello",
-    },
-  ]);
-};
+export default createHandler({
+  // return a zod object to define input validation
+  input(z) {
+    return z.object({
+      text: z.string(),
+    });
+  },
+  // return a zod object to define output validation, any undefined properties will be stripped from the response
+  output(z) {
+    return z.object({
+      id: z.string(),
+      text: z.string(),
+    });
+  },
+  async handler({ input, providers, logger, env }) {
+    // input: to get the combined incoming req.query, req.params, req.body
+    // logger: used for logging with different levels
+    // env: use to access the environment variables
+    // providers: an object containing all your providers you defined in your src/index.ts
 
-export default handler;
+    const { createTodo } = providers;
+    const todo = await createTodo({
+      text: input.text,
+    });
+    return todo;
+  },
+});
 ```
 
 Like mentioned, the handler is a normal express handler with additional context parameters passed into the first parameter. The context parameter will contain various helper functions provided by the shuttle library.
@@ -85,45 +144,9 @@ Shuttle uses winston for the logging. The logger is provided inside the context 
 
 You can set the LOG_LEVEL in your .env file. Depending on the log level you set, you will filter out less important messages your api logs. For example, setting LOG_LEVEL="error" will only show logs created via a `logger.error` call. LOG_LEVEL="info" will print debug and all levels above it, including warn and error.
 
-## Inject & Provide
+## Providers
 
-When setting up shuttle, you can use the provide callback function for configuring any dependencies via a IoC container.
-
-```ts
-// src/index.ts
-import shuttle, { InjectionKey } from "shuttle";
-
-function myFunction() {
-  return "hello";
-}
-
-export const YourKey = Symbol() as InjectionKey<typeof myFunction>;
-
-shuttle({
-  providers(provide) {
-    provide(YourKey, myFunction);
-  },
-});
-```
-
-and you can easily retrieve your depenedencies inside your handlers like so:
-
-```ts
-// src/routes/todos/get.ts
-import { type ShuttleHandler } from "shuttle";
-import { YourKey } from "../..";
-
-export const handler: ShuttleHandler = async ({ inject }, req, res) => {
-  const myFunction = inject(YourKey);
-  res.json({
-    message: myFunction(), // "hello"
-  });
-};
-
-export default handler;
-```
-
-By using your InjectionKey, the value returned will be typed correctly for you to use.
+The purpose of the providers is to help you build a more maintainble code base by using dependency injection. Instead of your handlers directly importing lower level implementations such as prisma, mongoose, aws sdk calls such as s3.putObject, the idea is your handler should put one layer of abstraction between your business logic and the lower level details. We suggest you have clearly defined interfaces on your providers object. This also helps with unit testing your handlers by simply injecting mocks as function arguments.
 
 ## Environment Variables
 
@@ -133,7 +156,7 @@ Shuttle uses `envalid` and `dotenv` to load in your `.env` and verify your envir
 // src/index.ts
 import shuttle from "@webdevcody/shuttle";
 
-const server = shuttle({
+const { createHandler } = shuttle({
   env({ str }) {
     return {
       MY_ENV: str({
@@ -142,25 +165,6 @@ const server = shuttle({
     };
   },
 });
-
-export type ShuttleHandler = typeof server["handler"];
-```
-
-and inside your handlers, you can make typesafe env objects like so:
-
-```ts
-// src/routes/todos/get.ts
-import { type ShuttleHandler } from "../..";
-
-export const handler: ShuttleHandler = async (
-  { env },
-  req,
-  res
-) => {
-  res.json(env.MY_ENV),
-};
-
-export default handler;
 ```
 
 ### Final Considerations

@@ -1,6 +1,6 @@
 {
   "name": "@webdevcody/create-launchpad",
-  "version": "0.0.25",
+  "version": "0.0.32",
   "description": "",
   "main": "src/index.ts",
   "publishConfig": {
