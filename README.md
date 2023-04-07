@@ -43,7 +43,7 @@ Running your server using a `npm run dev` should host your server on http://loca
 This project is setup to be easily deployed to an AWS Lambda and hosted behind api gateway. After setting up your launchpad project, you can deploy it to aws like so:
 
 1. you should update prisma/schema.prisma to use something other than sqlite - sqlite will not work on serverless
-2. `npx liftoff`
+2. `npx @webdevcody/liftoff`
 3. login to aws and update your lambda's environment variables
 
 ## Tetsing
