@@ -1,15 +1,11 @@
 // @ts-ignore
 
-import fs from "fs";
 import path from "path";
 import { Request, Response, type Express } from "express";
 import { Logger } from "winston";
 import { v4 as uuid } from "uuid";
 import { ZodError } from "zod";
-import { PrismaClient } from "@prisma/client";
 import { getDirectoryTree, Node } from "./getDirectoryTree";
-
-export const db = new PrismaClient();
 
 type MatchingPath = {
   path: string;
@@ -82,26 +78,6 @@ export async function runRoute<E, P>(
   if (!endpointPath) {
     return res.status(404).send("endpoint does not exist");
   }
-
-  // let urlToCheck;
-  // for (let part of parts) {
-  //   urlToCheck += `/${part}`;
-  //   const endpointPath = `src/routes/${urlToCheck}/${method}${
-  //     env.IS_LAMBDA ? ".js" : ".ts"
-  //   }`;
-
-  //   if (!fs.existsSync(endpointPath)) {
-  //     return res.status(404).send("endpoint does not exist");
-  //   }
-  // }
-
-  // const endpointPath = `src/routes/${parts[0]}/${method}${
-  //   env.IS_LAMBDA ? ".js" : ".ts"
-  // }`;
-
-  // if (!fs.existsSync(endpointPath)) {
-  //   return res.status(404).send("endpoint does not exist");
-  // }
 
   try {
     let handler: any = await import(
