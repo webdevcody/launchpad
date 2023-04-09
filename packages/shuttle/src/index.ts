@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { runRoute } from "./setupRoutes";
+import { runRoute } from "./runRoute";
 import winston, { Logger } from "winston";
 const { format } = winston;
 import {
@@ -103,13 +103,14 @@ export default function app<T, P>(appOptions: Options<T, P>) {
   ) {
     return async (
       { logger, env: CombinedEnv }: ShuttleContext<CombinedEnv>,
+      params: object,
       req: Request,
       res: Response
     ) => {
       const requestPayload = {
         ...req.body,
         ...req.query,
-        ...req.params,
+        ...params,
       };
       const input = options.input?.(z)?.parse(requestPayload) ?? requestPayload;
 

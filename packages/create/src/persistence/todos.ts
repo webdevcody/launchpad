@@ -15,3 +15,11 @@ export async function createTodo(todo: Omit<Todo, "id">) {
 export async function getTodos() {
   return await db.todo.findMany();
 }
+
+export async function getTodo(id: string) {
+  return await db.todo.findUnique({
+    where: {
+      id,
+    },
+  });
+}

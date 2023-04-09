@@ -1,3 +1,4 @@
+import { Todo } from "@prisma/client";
 import fetch from "cross-fetch";
 
 export function createTodo({ text }: { text: string }) {
@@ -9,5 +10,5 @@ export function createTodo({ text }: { text: string }) {
     body: JSON.stringify({
       text,
     }),
-  }).then((response) => response.json());
+  }).then((response) => response.json()) as Promise<Todo>;
 }
