@@ -1,6 +1,5 @@
 #!/bin/bash -e
 
-
 BUCKET_NAME="$APP_PREFIX-lambda-zip-bucket"
 
 # Check if the bucket exists

@@ -1,19 +1,10 @@
 #!/bin/bash -e
 
-if [[ -z "$APP_PREFIX" ]]; then
-  echo "Error: APP_PREFIX environment variable is not defined"
-  exit 1
-fi
-
-
 # Define the name of the Lambda function
 FUNCTION_NAME="$APP_PREFIX-lambda-function"
 
 # Define the path to the .zip file containing the function code
 ZIP_FILE_PATH="./out/payload.zip"
-
-# Define the AWS region where the function will be created
-AWS_REGION="us-east-1"
 
 # Define the name of the IAM role that the function will use
 IAM_ROLE_NAME="$APP_PREFIX-lambda-role"
@@ -40,10 +31,10 @@ if aws lambda get-function --function-name "$FUNCTION_NAME" &> /dev/null; then
   aws lambda update-function-code \
     --function-name "$FUNCTION_NAME" \
     --zip-file "fileb://$ZIP_FILE_PATH" \
-    --region "$AWS_REGION"
+    --region "$REGION"
 
   # Publish a new version of the function
-  while ! aws lambda publish-version --function-name "$FUNCTION_NAME" --region "$AWS_REGION" --output text --query 'Version'; do
+  while ! aws lambda publish-version --function-name "$FUNCTION_NAME" --region "$REGION" --output text --query 'Version'; do
     echo "Retrying publish-version command in 5 seconds..."
     sleep 5
   done
@@ -56,8 +47,16 @@ else
     --role "arn:aws:iam::$AWS_ACCOUNT_ID:role/$IAM_ROLE_NAME" \
     --handler "index.handler" \
     --zip-file "fileb://$ZIP_FILE_PATH" \
-    --region "$AWS_REGION"
+    --region "$REGION"
 fi
 
+# Load environment variables from .env.prod file
+source .env.prod
+
 # Verify that the function was created successfully
-aws lambda get-function --function-name "$FUNCTION_NAME" --region "$AWS_REGION"
+aws lambda get-function --function-name "$FUNCTION_NAME" --region "$REGION"
+
+aws lambda update-function-configuration \
+    --function-name $FUNCTION_NAME \
+    --environment Variables="{`cat .env.prod | xargs | sed 's/ /,/g'`}"
+
