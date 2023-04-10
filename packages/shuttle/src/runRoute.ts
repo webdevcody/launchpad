@@ -5,47 +5,31 @@ import { Request, Response, type Express } from "express";
 import { Logger } from "winston";
 import { v4 as uuid } from "uuid";
 import { ZodError } from "zod";
-import { getDirectoryTree, Node } from "./getDirectoryTree";
-
-type MatchingPath = {
-  path: string;
-  params: { [key: string]: string };
-};
+import { getHandlerFiles } from "./getHandlerFiles";
 
 export function mapRouteToFile(
   baseUrl: string,
   method: string,
   extension: string,
-  directoryTree: Node
+  handlerFiles: string[]
 ) {
-  function getMatchingFilePath(node: Node): MatchingPath | null {
-    if (node.children.length === 0) {
-      const fullPathRegex = new RegExp(
-        node.path.replace(".ts", "").replace(/\[[a-z0-9]+\]/, "([a-z0-9]+)")
-      );
-      const matches = fullPathRegex.exec(
-        `src/routes${baseUrl}/${method}${extension}`
-      );
-      if (matches) {
-        const paramsWithValues: Record<string, string> = {};
-        for (let i = 1; i < matches.length; i++) {
-          const key = node.path.match(/\[([a-z0-9]+)\]/g)[i - 1].slice(1, -1);
-          paramsWithValues[key] = matches[i];
-        }
-        return { path: node.path, params: { ...paramsWithValues } };
-      } else {
-        return null;
+  for (let path of handlerFiles) {
+    const fullPathRegex = new RegExp(
+      path.replace(/.(t|j)s$/, "").replace(/\[[a-z0-9]+\]/, "([a-z0-9]+)")
+    );
+    const matches = fullPathRegex.exec(
+      `src/routes${baseUrl}/${method}${extension}`
+    );
+    if (matches) {
+      const paramsWithValues: Record<string, string> = {};
+      for (let i = 1; i < matches.length; i++) {
+        const key = path.match(/\[([a-z0-9]+)\]/g)[i - 1].slice(1, -1);
+        paramsWithValues[key] = matches[i];
       }
-    } else {
-      for (let child of node.children) {
-        const foundPath = getMatchingFilePath(child);
-        if (foundPath) return foundPath;
-      }
-      return null;
+      return { path, params: { ...paramsWithValues } };
     }
   }
-
-  return getMatchingFilePath(directoryTree);
+  return null;
 }
 
 export async function runRoute<E, P>(
@@ -58,11 +42,9 @@ export async function runRoute<E, P>(
 ) {
   const method = req.method.toLowerCase();
 
-  const directoryTree = getDirectoryTree("src/routes");
+  const handlerFiles = await getHandlerFiles("src/routes");
 
-  console.log(JSON.stringify(directoryTree, null, 2));
-
-  if (!directoryTree) {
+  if (!handlerFiles.length) {
     return res.status(404).send("endpoint does not exist");
   }
 
@@ -70,10 +52,8 @@ export async function runRoute<E, P>(
     req.baseUrl,
     method,
     env.IS_LAMBDA ? ".js" : ".ts",
-    directoryTree
+    handlerFiles
   );
-
-  console.log("endpointPath!!", endpointPath);
 
   if (!endpointPath) {
     return res.status(404).send("endpoint does not exist");
@@ -83,6 +63,7 @@ export async function runRoute<E, P>(
     let handler: any = await import(
       path.join(process.cwd(), endpointPath.path)
     );
+
     if (env.IS_LAMBDA) {
       handler = handler.default;
     }

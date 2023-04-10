@@ -7,7 +7,6 @@ export default createHandler({
     });
   },
   async handler({ input, providers }) {
-    console.log("INPUT", input);
     const { getTodo } = providers;
     const todos = await getTodo(input.id);
     return todos;
