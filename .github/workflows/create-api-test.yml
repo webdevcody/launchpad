@@ -34,7 +34,6 @@ jobs:
       - name: Prisma generate
         run: |
           cp packages/create/.env.sample packages/create/.env
-          sed -i 's/localhost/127.0.0.1/g' packages/create/.env
           cd packages/create
           npx prisma generate
           npx prisma db push
