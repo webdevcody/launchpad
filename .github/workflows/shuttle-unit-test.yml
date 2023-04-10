@@ -1,4 +1,4 @@
-name: Test
+name: Shuttle - Unit Tests
 
 on: [push]
 
@@ -17,9 +17,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
-      - name: Prisma generate
-        run: npx prisma generate
 
       - name: Run shuttle unit tests
         run: npm run -w @webdevcody/shuttle test

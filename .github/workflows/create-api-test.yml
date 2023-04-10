@@ -1,4 +1,4 @@
-name: Create API Test
+name: Create - API Test
 
 on: [push]
 
@@ -36,6 +36,7 @@ jobs:
       - name: Prisma generate
         run: |
           cp packages/create/.env.sample packages/create/.env 
+          cd packages/create
           npx prisma generate
           npx prisma db push
 
