@@ -17,6 +17,16 @@ describe("mapRouteToFile", () => {
     });
   });
 
+  it("should allow a user to provide strings containing some special characters in the path params", () => {
+    const fullPath = mapRouteToFile("/todos/123-aBc_hello", "get", ".ts", [
+      "todos/[id]/get.ts",
+    ]);
+    expect(fullPath).toEqual({
+      params: { id: "123-aBc_hello" },
+      path: "todos/[id]/get.ts",
+    });
+  });
+
   it("should find the path with a large list of paths", () => {
     const paths = ["todos/get.ts", "todos/post.ts", "status/get.ts"];
 
