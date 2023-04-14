@@ -87,8 +87,11 @@ export default function app<T, P>(appOptions: Options<T, P>) {
 
   app.use(express.json());
 
-  app.use("*", (req, res) => {
-    runRoute(app, appOptions.providers, logger, env, req, res);
+  app.use("*", function handleRequest(req, res) {
+    runRoute(app, appOptions.providers, logger, env, req, res).catch((err) => {
+      logger.error("an internal exception occured inside of shuttle", err);
+      res.status(500).send("something bad happened");
+    });
   });
 
   if (!env.IS_LAMBDA) {
@@ -101,12 +104,12 @@ export default function app<T, P>(appOptions: Options<T, P>) {
   function createHandler<I extends ZodTypeAny, O extends ZodTypeAny>(
     options: CreateHandlerOptions<I, O, CombinedEnv, P>
   ) {
-    return async (
+    return async function wrappedHandler(
       { logger, env: CombinedEnv }: ShuttleContext<CombinedEnv>,
       params: object,
       req: Request,
       res: Response
-    ) => {
+    ) {
       const requestPayload = {
         ...req.body,
         ...req.query,

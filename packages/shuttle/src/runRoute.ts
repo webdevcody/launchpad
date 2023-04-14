@@ -23,7 +23,9 @@ export function mapRouteToFile(
     if (matches) {
       const paramsWithValues: Record<string, string> = {};
       for (let i = 1; i < matches.length; i++) {
-        const key = path.match(/\[([a-z0-9]+)\]/g)[i - 1].slice(1, -1);
+        const match = path.match(/\[([a-z0-9]+)\]/g);
+        if (!match) continue;
+        const key = match[i - 1].slice(1, -1);
         paramsWithValues[key] = matches[i];
       }
       return { path, params: { ...paramsWithValues } };
@@ -32,7 +34,7 @@ export function mapRouteToFile(
   return null;
 }
 
-export async function runRoute<E, P>(
+export async function runRoute<E extends { IS_LAMBDA: boolean }, P>(
   app: Express,
   providers: P,
   logger: Logger,
@@ -59,56 +61,46 @@ export async function runRoute<E, P>(
     return res.status(404).send("endpoint does not exist");
   }
 
-  try {
-    let handler: any = await import(
-      path.join(process.cwd(), endpointPath.path)
-    );
+  let handler: any = await import(path.join(process.cwd(), endpointPath.path));
 
-    if (env.IS_LAMBDA) {
-      handler = handler.default;
-    }
-
-    const requestId = uuid();
-    const start = new Date();
-    const startMs = Date.now();
-    const timeInvoked = start.toISOString();
-    const methodUppercase = method.toUpperCase();
-    const logContext = {
-      timeInvoked,
-      requestId,
-      method: methodUppercase,
-      route: endpointPath,
-      filePath: endpointPath,
-    };
-
-    handler
-      .default({ providers, logger, env }, endpointPath.params, req, res)
-      .then(() => {
-        const elaspedTime = Date.now() - startMs;
-        logger.info(`request completed`, {
-          ...logContext,
-          elaspedTime,
-        });
-      })
-      .catch((error: Error) => {
-        const elaspedTime = Date.now() - startMs;
-        logger.error(`request errored with ${error.message}`, {
-          ...logContext,
-          error: error.message,
-          errorTrace: error.stack,
-          elaspedTime,
-        });
-        if (error instanceof ZodError) {
-          res.status(400).send(error.message);
-        } else {
-          res.status(500).send(error.message);
-        }
-      });
-  } catch (err: unknown) {
-    let message = "something went wrong";
-    if (err instanceof Error) {
-      message = err.message;
-    }
-    res.status(500).send(message);
+  if (env.IS_LAMBDA) {
+    handler = handler.default;
   }
+
+  const requestId = uuid();
+  const start = new Date();
+  const startMs = Date.now();
+  const timeInvoked = start.toISOString();
+  const methodUppercase = method.toUpperCase();
+  const logContext = {
+    timeInvoked,
+    requestId,
+    method: methodUppercase,
+    route: endpointPath,
+    filePath: endpointPath,
+  };
+
+  handler
+    .default({ providers, logger, env }, endpointPath.params, req, res)
+    .then(function handlerDone() {
+      const elaspedTime = Date.now() - startMs;
+      logger.info(`request completed`, {
+        ...logContext,
+        elaspedTime,
+      });
+    })
+    .catch((error: Error) => {
+      const elaspedTime = Date.now() - startMs;
+      logger.error(`request errored with ${error.message}`, {
+        ...logContext,
+        error: error.message,
+        errorTrace: error.stack,
+        elaspedTime,
+      });
+      if (error instanceof ZodError) {
+        res.status(400).send(error.message);
+      } else {
+        res.status(500).send(error.message);
+      }
+    });
 }

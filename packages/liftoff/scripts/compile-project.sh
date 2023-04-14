@@ -2,10 +2,6 @@
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
-
-rm -rf dist
-mkdir -p dist
-
 # Run TypeScript build
 rm -rf tmp
 mkdir -p tmp

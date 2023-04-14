@@ -16,7 +16,9 @@ export function mapRouteToFile(
     if (matches) {
       const paramsWithValues: Record<string, string> = {};
       for (let i = 1; i < matches.length; i++) {
-        const key = path.match(/\[([a-zA-Z0-9\-\_]+)\]/g)[i - 1].slice(1, -1);
+        const match = path.match(/\[([a-zA-Z0-9\-\_]+)\]/g);
+        if (!match) continue;
+        const key = match[i - 1].slice(1, -1);
         paramsWithValues[key] = matches[i];
       }
       return { path, params: { ...paramsWithValues } };
